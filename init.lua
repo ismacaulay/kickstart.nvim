@@ -782,7 +782,8 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd' },
       },
     },
   },
@@ -816,7 +817,25 @@ require('lazy').setup({
           --   end,
           -- },
         },
-        opts = {},
+        -- config = function()
+        --   -- Unlink current snippet when leaving insert mode
+        --   -- https://github.com/L3MON4D3/LuaSnip/issues/258#issuecomment-1011938524
+        --   vim.api.nvim_create_autocmd('ModeChanged', {
+        --     pattern = '*',
+        --     callback = function()
+        --       if
+        --         ((vim.v.event.old_mode == 's' and vim.v.event.new_mode == 'n') or vim.v.event.old_mode == 'i')
+        --         and require('luasnip').session.current_nodes[vim.api.nvim_get_current_buf()]
+        --         and not require('luasnip').session.jump_active
+        --       then
+        --         require('luasnip').unlink_current()
+        --       end
+        --     end,
+        --   })
+        -- end,
+        opts = {
+          history = false,
+        },
       },
       'folke/lazydev.nvim',
     },
@@ -847,9 +866,24 @@ require('lazy').setup({
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'enter',
 
-        -- ['<S-Tab>'] = { 'select_prev', 'fallback' },
-        -- ['<Tab>'] = { 'select_next', 'fallback' },
-
+        -- ['<Tab>'] = {
+        --   function(cmp)
+        --     local luasnip = require 'luasnip'
+        --
+        --     if cmp.is_visible() then
+        --       cmp.select_next()
+        --     end
+        --   end,
+        --   'fallback',
+        -- },
+        -- ['<S-Tab>'] = {
+        --   function(cmp)
+        --     if cmp.is_visible() then
+        --       cmp.select_prev()
+        --     end
+        --   end,
+        --   'fallback',
+        -- },
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
@@ -873,7 +907,21 @@ require('lazy').setup({
         },
       },
 
-      snippets = { preset = 'luasnip' },
+      snippets = {
+        preset = 'luasnip',
+        active = function(filter)
+          local snippet = require 'luasnip'
+          local blink = require 'blink.cmp'
+          if snippet.in_snippet() and not blink.is_visible() then
+            return true
+          else
+            if not snippet.in_snippet() and vim.fn.mode() == 'n' then
+              snippet.unlink_current()
+            end
+            return false
+          end
+        end,
+      },
 
       -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
       -- which automatically downloads a prebuilt binary when enabled.
