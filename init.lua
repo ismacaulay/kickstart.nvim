@@ -783,7 +783,10 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
         json = { 'prettierd' },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -1094,6 +1097,7 @@ require('lazy').setup({
 require 'filetype'
 require 'keymap'
 require 'settings'
+require 'lsp'
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
